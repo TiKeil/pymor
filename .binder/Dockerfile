@@ -33,7 +33,7 @@ RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - \
 # at this point setup.py exists only in image_binder
 # for the dev image it's only available via the mount at runtime
 ADD requirements*.txt /tmp/
-ADD docker/ipython_kernel_config.py /etc/ipython/
+ADD .binder/ipython_kernel_config.py /etc/ipython/
 ADD .binder/dev-entrypoint.bash /usr/local/bin/
 
 ENV JUPYTER_TOKEN=${PYMOR_JUPYTER_TOKEN} \
