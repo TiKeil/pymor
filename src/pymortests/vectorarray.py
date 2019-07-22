@@ -8,8 +8,6 @@ from numbers import Number
 import pytest
 import numpy as np
 
-from pymor.bindings.fenics import FenicsVectorSpace
-from pymor.bindings.ngsolve import NGSolveVectorSpace
 from pymor.vectorarrays.numpy import NumpyVectorSpace
 
 from pymor.algorithms.basic import almost_equal
@@ -1177,8 +1175,15 @@ def test_views_dtype(vector_array):
     assert original.dtype == view.dtype
 
     # skip imp that don't support complex
-    if type(original.space) in (FenicsVectorSpace, NGSolveVectorSpace):
-        return
+    from pymor.core import config
+    if config.HAVE_FENICS:
+        from pymor.bindings.fenics import FenicsVectorSpace
+        if type(original.space) is FenicsVectorSpace:
+            return
+    if config.HAVE_NGSOLVE:
+        from pymor.bindings.ngsolve import NGSolveVectorSpace
+        if type(original.space) is NGSolveVectorSpace:
+            return
     view.scal(1j)
     assert original.dtype == view.dtype
     original = vector_array.copy()
