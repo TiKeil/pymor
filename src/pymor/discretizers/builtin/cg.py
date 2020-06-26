@@ -1223,7 +1223,7 @@ def discretize_stationary_cg(analytical_problem, diameter=None, domain_discretiz
         m = preassemble_(m)
         if energy_product:
             products = {**m.products}
-            eL = eL.assemble(eL.parse_parameter(energy_product))
+            eL = eL.assemble(energy_product)
             products['energy'] = eL.with_(matrix=0.5*(eL.matrix + eL.matrix.T))
             m = m.with_(products=products)
 
