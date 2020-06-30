@@ -1368,4 +1368,4 @@ class InducedNorm(ParametricObject):
                                     0, norm_squared)
         if self.raise_negative and np.any(norm_squared < 0):
             raise ValueError(f'norm is negative (square = {norm_squared})')
-        return np.sqrt(norm_squared)
+        return np.sqrt(np.abs(norm_squared))
