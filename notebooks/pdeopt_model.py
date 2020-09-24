@@ -37,14 +37,15 @@ class LinearPdeoptStationaryModel(StationaryModel):
         if adjoint_approach:
             if P is None:
                 P = self.solve_dual(mu)
-        for (parameter, size) in self.parameters.items():             
+        for (parameter, size) in self.parameters.items(): 
             for index in range(size):
-                output_partial_dmu = self.output_functional.d_mu(parameter, index).apply(U, mu=mu).to_numpy()[0,0] #inefficient call
+                output_partial_dmu = self.output_functional.d_mu(parameter, index).apply(U, mu=mu).to_numpy()[0,0]
                 if adjoint_approach:
                     residual_dmu_lhs = self.operator.d_mu(parameter, index).apply2(U, P, mu=mu)             
                     residual_dmu_rhs = self.rhs.d_mu(parameter, index).apply_adjoint(P, mu=mu).to_numpy()[0,0]
                     gradient.append((output_partial_dmu + residual_dmu_rhs - residual_dmu_lhs)[0,0])
                 else:
                     primal_sensitivity = self.primal_sensitivity(parameter, index, mu, U=U)
-                    gradient.append(output_partial_dmu + self.output_functional.apply(primal_sensitivity, mu).to_numpy()[0,0])
+                    gradient.append(output_partial_dmu + \
+                            self.output_functional.apply(primal_sensitivity, mu).to_numpy()[0,0])
         return np.array(gradient)
