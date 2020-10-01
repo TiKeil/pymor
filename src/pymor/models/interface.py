@@ -76,6 +76,45 @@ class Model(CacheableObject, ParametricObject):
         assert self.parameters.assert_compatible(mu)
         return self.cached_method_call(self._solve, mu=mu, return_output=return_output, **kwargs)
 
+    def solution_sensitivity(self, parameter, index, mu, U=None):
+        """Solve for the derivative of the solution w.r.t. a parameter index
+
+        Parameters
+        ----------
+        parameter
+            parameter for which to compute the sensitivity
+        index
+            parameter index for which to compute the sensitivity
+        mu
+            |Parameter value| for which to solve
+        U
+            |VectorArray| containing the solutions for the |Parameter values| mu
+
+        Return
+        ------
+        The sensitivity of the solution as a |VectorArray|.
+        """
+        return NotImplemented
+
+    @property
+    def dual_model(self):
+        """Instantiate the dual model which is used to solve for a dual solution of the |Model|."""
+        return NotImplemented
+
+    def solve_dual(self, mu):
+        """Solve the dual problem for the |parameter values| `mu`.
+
+        Parameters
+        ----------
+        mu
+            |Parameter value| for which to solve.
+
+        Returns
+        -------
+        The dual solution |VectorArray|.
+        """
+        return self.dual_model.solve(mu)
+
     def output(self, mu=None, **kwargs):
         """Return the model output for given |parameter values| `mu`.
 
@@ -89,6 +128,24 @@ class Model(CacheableObject, ParametricObject):
         The computed model output as a |VectorArray| from `output_space`.
         """
         return self.solve(mu=mu, return_output=True, **kwargs)[1]
+
+    def output_gradient(self, mu, U=None, P=None, adjoint_approach=True):
+        """compute the gradient w.r.t. the parameter of the output functional
+
+        Parameters
+        ----------
+        mu
+            |Parameters value| for which to compute the gradient
+        U
+            |VectorArray| containing the solutions for the |Parameter values| mu
+        P
+            |VectorArray| containing the dual solutions for the |Parameter values| mu
+        adjoint_approach
+            decided whether to use the adjoint approach for computing the gradient
+            True: use dual solution
+            False: use sensitivities of solutions
+        """
+        return NotImplemented
 
     def estimate_error(self, U, mu=None):
         """Estimate the model error for a given solution.
