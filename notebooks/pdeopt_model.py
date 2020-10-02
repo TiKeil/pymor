@@ -11,15 +11,15 @@ class LinearPdeoptStationaryModel(StationaryModel):
         self.__auto_init(locals())
 
     @property
-    def dual_model(self):
-        if not hasattr(self, '_dual_model'):
+    def dual(self):
+        if not hasattr(self, '_dual'):
             assert self.output_functional is not None
             assert self.output_functional.linear
             assert 1 # TODO: assert that the operator is symmetric
-            self._dual_model = self.with_(rhs=self.output_functional.H)
-        return self._dual_model
+            self._dual = self.with_(rhs=self.output_functional.H)
+        return self._dual
 
-    def solution_sensitivity(self, parameter, index, mu, U=None):
+    def solve_d_mu(self, parameter, index, mu, U=None):
         if U is None:
             U = self.solve(mu)
         residual_dmu_lhs = VectorOperator(self.operator.d_mu(parameter, index).apply(U, mu=mu))
@@ -27,16 +27,13 @@ class LinearPdeoptStationaryModel(StationaryModel):
         rhs_operator = residual_dmu_rhs-residual_dmu_lhs
         return self.operator.apply_inverse(rhs_operator.as_range_array(mu), mu=mu)
 
-    def solve_dual(self, mu):
-        return self.dual_model.solve(mu)
-
-    def output_functional_gradient(self, mu, U=None, P=None, adjoint_approach=True):
+    def output_d_mu(self, mu, U=None, P=None, adjoint_approach=True):
         if U is None:
             U = self.solve(mu)
         gradient = []
         if adjoint_approach:
             if P is None:
-                P = self.solve_dual(mu)
+                P = self.dual.solve(mu)
         for (parameter, size) in self.parameters.items():
             for index in range(size):
                 output_partial_dmu = self.output_functional.d_mu(parameter, index).apply(U, mu=mu).to_numpy()[0,0]
@@ -45,7 +42,7 @@ class LinearPdeoptStationaryModel(StationaryModel):
                     residual_dmu_rhs = self.rhs.d_mu(parameter, index).apply_adjoint(P, mu=mu).to_numpy()[0,0]
                     gradient.append((output_partial_dmu + residual_dmu_rhs - residual_dmu_lhs)[0,0])
                 else:
-                    primal_sensitivity = self.primal_sensitivity(parameter, index, mu, U=U)
+                    U_d_mu = self.solve_d_mu(parameter, index, mu, U=U)
                     gradient.append(output_partial_dmu + \
-                            self.output_functional.apply(primal_sensitivity, mu).to_numpy()[0,0])
+                            self.output_functional.apply(U_d_mu, mu).to_numpy()[0,0])
         return np.array(gradient)
