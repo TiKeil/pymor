@@ -76,6 +76,13 @@ class CoerciveRBEstimator(ImmutableObject):
     def estimate(self, U, mu, m):
         return self.estimate_error(U, mu, m)
 
+    def estimate_output_error(self, U, mu, m):
+        # what should we do here
+        est = self.residual.apply(U, mu=mu).norm()
+        if self.coercivity_estimator:
+            est /= self.coercivity_estimator(mu)
+        return est
+
     def restricted_to_subbasis(self, dim, m):
         if self.residual_range_dims:
             residual_range_dims = self.residual_range_dims[:dim + 1]
